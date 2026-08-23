@@ -1,32 +1,17 @@
 {
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true, // 외부 라이브러리(sequelize) import 호환성 활성화
+    "allowSyntheticDefaultImports": true, // default import 에러 방지지
     "rootDir": "./src",
     "outDir": "./dist",
 
-    // Environment Settings
-    "module": "nodenext",
-    "target": "esnext",
     // For nodejs:
     "lib": ["esnext"],
-    "types": ["node"],
-
-    // Other Outputs
-    "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
-
-    // Stricter Typechecking Options
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-
-    // Recommended Options
-    "strict": true,
-    "verbatimModuleSyntax": true,
-    "isolatedModules": true,
-    "noUncheckedSideEffectImports": true,
-    "moduleDetection": "force",
-    "skipLibCheck": true
+    "types": ["node"]
   },
   "include": ["src/**/*"]
 }
