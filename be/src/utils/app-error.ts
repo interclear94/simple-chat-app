@@ -3,8 +3,8 @@ export class AppError extends Error {
   public readonly isOperational: boolean;
 
   constructor(
-    message: string,
     statusCode: number = 500,
+    message: string,
     isOperational: boolean = true,
   ) {
     super(message);
