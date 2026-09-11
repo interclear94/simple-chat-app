@@ -8,6 +8,10 @@ import {
 
 import { sequelize } from "../config/database.js";
 
+// role 역할 타입
+export const USER_ROLES = ["user", "admin"] as const;
+export type UserRole = (typeof USER_ROLES)[number];
+
 /*
   User 모델 클래스입니다.
 
@@ -31,7 +35,15 @@ export class User extends Model<
   declare email: string;
   declare nickname: string;
 
+  // 기본값("user")이 있으므로 User.create() 시 생략 가능
+  declare role: CreationOptional<UserRole>;
+
+  // password hash (비밀번호 암호화)
   declare passwordHash: string;
+
+  // refresh token hash (리프레시 토큰 해시)
+  declare refreshTokenHash: string | null;
+
   /*
     timestamps: true를 사용하면
     Sequelize가 아래 두 필드를 자동으로 관리합니다.
@@ -75,18 +87,33 @@ User.init(
 
     passwordHash: {
       /*
-    bcrypt로 해시된 비밀번호를 저장합니다.
+       bcrypt로 해시된 비밀번호를 저장합니다.
 
-    평문:
-    "12345678"
+       평문:
+        "12345678"
 
-    저장되는 값 예:
-    "$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy"
+      저장되는 값 예:
+      "$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy"
 
-    bcrypt 해시값은 일반적인 문자열이므로 STRING으로 저장합니다.
-  */
+
+        bcrypt 해시값은 일반적인 문자열이므로 STRING으로 저장합니다.
+      */
       type: DataTypes.STRING(255),
       allowNull: false,
+    },
+
+    // refresh token hash
+    refreshTokenHash: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+
+    //
+    role: {
+      type: DataTypes.ENUM(...USER_ROLES),
+      allowNull: false,
+      defaultValue: "user",
     },
 
     createdAt: {
@@ -94,6 +121,7 @@ User.init(
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
+
     updatedAt: {
       type: DataTypes.DATE,
       allowNull: false,

@@ -94,15 +94,8 @@
 
 import { UniqueConstraintError } from "sequelize";
 import { User } from "../models/User.js";
-import { AppError } from "../utils/app-error.js";
 import bcrypt from "bcrypt";
-
-// export async function getUsers(): Promise<User[]> {
-//   return User.findAll({
-//     order: [["id", "DESC"]],
-//     attributes: ["id", "email", "nickname", "createdAt"],
-//   });
-// }
+import { badRequest, conflict } from "../utils/httpErrors.js";
 
 export async function createUser(params: {
   email: string;
@@ -113,23 +106,27 @@ export async function createUser(params: {
   const nickname = params.nickname.trim();
 
   if (!email || !nickname) {
-    throw new AppError("email과 nickname은 필수입니다.", 400);
+    badRequest("email과 nickname은 필수입니다.");
   }
 
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+  /**
+   * emailPattern.test(email)
+   * 정규식 규칙 판별
+   */
   if (!emailPattern.test(email)) {
-    throw new AppError("올바른 이메일 형식이 아닙니다.", 400);
+    throw badRequest("올바른 이메일 형식이 아닙니다.");
   }
 
   if (nickname.length > 50) {
-    throw new AppError("닉네임은 50자 이하이어야 합니다.", 400);
+    throw badRequest("닉네임은 50자 이하이어야 합니다.");
   }
 
   const password = params.password;
 
   if (password.length < 8) {
-    throw new AppError("비밀번호는 8자 이상이어야합니다.", 400);
+    throw badRequest("비밀번호는 8자 이상이어야합니다.");
   }
 
   const passwordHash = await bcrypt.hash(password, 5);
@@ -142,7 +139,7 @@ export async function createUser(params: {
     });
   } catch (err) {
     if (err instanceof UniqueConstraintError) {
-      throw new AppError("이미 사용 중인 이메일 또는 닉네임입니다.", 409);
+      throw conflict("이미 사용 중인 이메일 또는 닉네임입니다.");
     }
 
     throw err;

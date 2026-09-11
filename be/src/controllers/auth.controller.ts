@@ -1,6 +1,8 @@
-import { Request, Response } from "express";
-import { login } from "../services/auth.service";
-import { createToken } from "../utils/jwt.js";
+import { NextFunction, Request, Response } from "express";
+import { login, refreshSession } from "../services/auth.service";
+import { createAccessToken } from "../utils/jwt.js";
+import { clearRefreshCookie, refreshCookieOptions } from "../utils/cookie";
+import { AppError } from "../utils/app-error";
 
 export const loginController = async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -11,14 +13,31 @@ export const loginController = async (req: Request, res: Response) => {
    */
   const result = await login({ email, password });
 
-  /**
-   * access token 발급
-   */
-  const accessToken = createToken({ email, password });
+  // cookie refresh token 보냄
+  res.cookie("refreshToken", result.refreshToken, refreshCookieOptions);
 
   res.status(200).json({
     message: "로그인 성공",
-    result,
-    accessToken,
+    result: {
+      user: result.user,
+      accessToken: result.accessToken,
+    },
+  });
+};
+
+export const refreshController = async (req: Request, res: Response) => {
+  const rawRefreshToken = req.cookies.refreshToken as string | undefined;
+
+  const result = await refreshSession(rawRefreshToken);
+
+  /*
+      service가 새 토큰을 만들고,
+      controller가 HTTP cookie 응답으로 설정합니다.
+    */
+  res.cookie("refreshToken", result.refreshToken, refreshCookieOptions);
+
+  return res.status(200).json({
+    accessToken: result.accessToken,
+    user: result.user,
   });
 };

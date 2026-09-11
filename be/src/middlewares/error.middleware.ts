@@ -2,6 +2,7 @@ import { ErrorRequestHandler, Request, Response, NextFunction } from "express";
 
 import { ValidationError } from "sequelize";
 import { AppError } from "../utils/app-error.js";
+import { clearRefreshCookie } from "../utils/cookie.js";
 
 /*
   Express의 에러 미들웨어는
@@ -27,6 +28,10 @@ export const errorMiddleware: ErrorRequestHandler = (
     throw new AppError("이미 존재합니다.", 409);
   */
   if (error instanceof AppError) {
+    if ("shouldClearRefreshCookie" in error && error.shouldClearRefreshCookie) {
+      clearRefreshCookie(res);
+    }
+
     res.status(error.statusCode).json({
       message: error.message,
     });

@@ -74,5 +74,6 @@ export const env = {
     password: process.env.DB_PASSWORD as string,
   },
 
-  jwt: getRequiredEnv("JWT_ACCESS_SECRET"),
+  jwt_access_secret: getRequiredEnv("JWT_ACCESS_SECRET"),
+  jwt_refresh_secret: getRequiredEnv("JWT_REFRESH_SECRET"),
 };
